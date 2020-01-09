@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Cypress Semiconductor Corporation or a subsidiary of
+ * Copyright 2020, Cypress Semiconductor Corporation or a subsidiary of
  * Cypress Semiconductor Corporation. All Rights Reserved.
  *
  * This software, including source code, documentation and related
@@ -33,15 +33,15 @@
 
 /** @file
  *
- * OPP server Device Sample Application for 2070X devices.
+ * OPP server Device Sample Application for 20xxx devices.
  *
- * This file implements 2070x embedded application controlled over UART.
+ * This file implements 20xxx embedded application controlled over UART.
  * Current version of the application exposes OPP server
  * MCU connected over UART can send commands to control the application.
  *
  * To demonstrate the app, work through the following steps.
- * 1. Plug the WICED Bluetooth ( 2070x ) evaluation board into your computer
- * 2. Build and download the application ( to the 2070x board )
+ * 1. Plug the WICED Bluetooth ( 20xxx ) evaluation board into your computer
+ * 2. Build and download the application ( to the 20xxx board )
  * 3. Use ClientControl application to receive object files.
  *
  * The sample app performs as a Bluetooth OPP server
@@ -60,19 +60,9 @@
  *  - Receive NVRAM information from the host
  *
  * Application Instructions
- *  - Build application to produce a downloadable hcd file.  For example
- *    demo.hci_opp_server-CYW920706WCDEVAL DIRECT_LOAD=1 build
- *  - Connect a PC terminal to the serial port of the WICED Eval board.
- *  - Start ClientControl application.
- *  - Select the COM port assigned to the WICED Eval board.
- *  - Modify Local Bluetooth address if necessary.
- *  - Enter the full path of the HCD file to download, for example
- *    C:\Users\xxx\Documents\WICED-Studio-X.X\
- *        20706-A2_Bluetooth\build\
- *        hci_opp_server-CYW920706WCDEVAL-rom-ram-Wiced-release\
- *        hci_opp_server-CYW920706WCDEVAL-rom-ram-Wiced-release.hcd
- *  - Click on the Download button to push the HCD file, Local Address and
- *    peer host information if it was saved before.
+ *  - Connect a PC terminal to WICED Eval board.
+ *  - Build and download the application to the board.
+ *  - Run the ClientControl application and open the WICED HCI port
  *
  * OPP server Connection
  * The Object Push Profile is used to receive object files(e.g vCard,
@@ -536,6 +526,9 @@ APPLICATION_START()
 
     //Set to PUART to see traces on peripheral uart(puart)
     wiced_set_debug_uart( WICED_ROUTE_DEBUG_TO_PUART );
+#ifdef CYW20706A2
+    wiced_hal_puart_select_uart_pads( WICED_PUART_RXD, WICED_PUART_TXD, 0, 0);
+#endif
 
     // Set the debug uart as WICED_ROUTE_DEBUG_NONE to get rid of prints
     //wiced_set_debug_uart( WICED_ROUTE_DEBUG_NONE );

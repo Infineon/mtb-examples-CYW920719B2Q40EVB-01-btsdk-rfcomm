@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Cypress Semiconductor Corporation or a subsidiary of
+ * Copyright 2020, Cypress Semiconductor Corporation or a subsidiary of
  * Cypress Semiconductor Corporation. All Rights Reserved.
  *
  * This software, including source code, documentation and related
@@ -42,6 +42,7 @@
 #include "wiced_memory.h"
 #include "wiced_hal_wdog.h"
 #include "string.h"
+#include "wiced_hal_puart.h"
 
 #define BCM920706 20706
 #define BCM920707 20707
@@ -97,6 +98,10 @@ void hci_control_handle_trace_enable( uint8_t *p_data )
         wiced_bt_dev_register_hci_trace( NULL);
     }
     wiced_set_debug_uart( route_debug );
+#ifdef CYW20706A2
+    if (route_debug == WICED_ROUTE_DEBUG_TO_PUART)
+        wiced_hal_puart_select_uart_pads( WICED_PUART_RXD, WICED_PUART_TXD, 0, 0);
+#endif
 }
 
 /*
@@ -457,7 +462,20 @@ void hci_control_misc_handle_get_version( void )
     uint8_t   tx_buf[15];
     uint8_t   cmd = 0;
 
+// If this is 20819 or 20820, we do detect the device from hardware
+#define RADIO_ID    0x006007c0
+#define RADIO_20820 0x80
+#define CHIP_20820  20820
+#define CHIP_20819  20819
+#if (CHIP==CHIP_20819) || (CHIP==CHIP_20820)
+    uint32_t chip = CHIP_20819;
+    if (*(UINT32*) RADIO_ID & RADIO_20820)
+    {
+        chip = CHIP_20820;
+    }
+#else
     uint32_t  chip = CHIP;
+#endif
 
     tx_buf[cmd++] = WICED_SDK_MAJOR_VER;
     tx_buf[cmd++] = WICED_SDK_MINOR_VER;

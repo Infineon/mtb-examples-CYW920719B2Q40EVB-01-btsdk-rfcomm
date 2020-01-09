@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Cypress Semiconductor Corporation or a subsidiary of
+ * Copyright 2020, Cypress Semiconductor Corporation or a subsidiary of
  * Cypress Semiconductor Corporation. All Rights Reserved.
  *
  * This software, including source code, documentation and related
@@ -33,9 +33,9 @@
 
 /** @file
  *
- * PBAP Client Device Sample Application for 2070X devices.
+ * PBAP Client Device Sample Application for 20xxx devices.
  *
- * This file implements 2070x embedded application controlled over UART.
+ * This file implements 20xxx embedded application controlled over UART.
  * Current version of the application exposes PBAP Client
  *
  * MCU connected over UART can send commands to execute certain functionality
@@ -44,8 +44,8 @@
  * advertisements or scanning.
  *
  * To demonstrate the app, work through the following steps.
- * 1. Plug the WICED Bluetooth ( 2070x ) evaluation board into your computer
- * 2. Build and download the application ( to the 2070x board )
+ * 1. Plug the WICED Bluetooth ( 20xxx ) evaluation board into your computer
+ * 2. Build and download the application ( to the 20xxx board )
  * 3. Use ClientControl application to send various commands
  *
  * The sample app performs as a Bluetooth PBAP Client.
@@ -1269,6 +1269,9 @@ APPLICATION_START()
 
     // Set to PUART to see traces on peripheral uart(puart)
     wiced_set_debug_uart( WICED_ROUTE_DEBUG_TO_PUART );
+#ifdef CYW20706A2
+    wiced_hal_puart_select_uart_pads( WICED_PUART_RXD, WICED_PUART_TXD, 0, 0);
+#endif
 
     // Set to HCI to see traces on HCI uart - default if no call to wiced_set_debug_uart()
     // wiced_set_debug_uart( WICED_ROUTE_DEBUG_TO_HCI_UART );

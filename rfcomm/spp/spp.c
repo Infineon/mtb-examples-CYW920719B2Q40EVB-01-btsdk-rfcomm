@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Cypress Semiconductor Corporation or a subsidiary of
+ * Copyright 2020, Cypress Semiconductor Corporation or a subsidiary of
  * Cypress Semiconductor Corporation. All Rights Reserved.
  *
  * This software, including source code, documentation and related
@@ -108,6 +108,7 @@
 #define BUTTON_GPIO                         WICED_P30
 int     app_send_offset = 0;
 uint8_t app_send_buffer[SPP_MAX_PAYLOAD];
+uint32_t time_start = 0;
 #endif
 
 #ifdef SEND_DATA_ON_TIMEOUT
@@ -141,8 +142,9 @@ wiced_bt_spp_reg_t spp_reg =
 };
 
 wiced_transport_buffer_pool_t*  host_trans_pool;
-uint16_t                        spp_handle;
+uint16_t                        spp_handle = 0;
 wiced_timer_t                   app_tx_timer;
+uint32_t                        spp_rx_bytes = 0;
 
 const uint8_t app_sdp_db[] = // Define SDP database
 {
@@ -222,6 +224,20 @@ extern void     wiced_bt_trace_array( const char *string, const uint8_t* array, 
 extern BOOL32 wiced_hal_puart_select_uart_pads(UINT8 rxdPin, UINT8 txdPin, UINT8 ctsPin, UINT8 rtsPin);
 extern wiced_result_t wiced_bt_app_init( void );
 #endif
+
+#ifndef CYW20706A2
+extern uint64_t clock_SystemTimeMicroseconds64();
+#else
+#include "rtc.h"
+uint64_t clock_SystemTimeMicroseconds64(void)
+{
+    tRTC_REAL_TIME_CLOCK rtcClock;
+    rtc_getRTCRawClock(&rtcClock);
+    // To convert 128 kHz rtc timer to milliseconds divide it by 131: //128 kHz = 128 * 1024 = 131072; to microseconds: 1000000 / 131072 = 7.62939453125 (7.63)
+    return rtcClock.rtc64 * 763 / 100;
+}
+#endif
+
 /*******************************************************************
  * Function Definitions
  ******************************************************************/
@@ -492,6 +508,7 @@ void spp_connection_up_callback(uint16_t handle, uint8_t* bda)
 {
     WICED_BT_TRACE("%s handle:%d address:%B\n", __FUNCTION__, handle, bda);
     spp_handle = handle;
+    spp_rx_bytes = 0;
 }
 
 /*
@@ -499,7 +516,7 @@ void spp_connection_up_callback(uint16_t handle, uint8_t* bda)
  */
 void spp_connection_down_callback(uint16_t handle)
 {
-    WICED_BT_TRACE("%s handle:%d\n", __FUNCTION__, handle);
+    WICED_BT_TRACE("%s handle:%d rx_bytes:%d\n", __FUNCTION__, handle, spp_rx_bytes);
     spp_handle = 0;
 }
 
@@ -509,7 +526,7 @@ void spp_connection_down_callback(uint16_t handle)
  */
 wiced_bool_t spp_rx_data_callback(uint16_t handle, uint8_t* p_data, uint32_t data_len)
 {
-    int i;
+//    int i;
 //    wiced_bt_buffer_statistics_t buffer_stats[4];
 
 //    wiced_bt_get_buffer_usage (buffer_stats, sizeof(buffer_stats));
@@ -521,7 +538,9 @@ wiced_bool_t spp_rx_data_callback(uint16_t handle, uint8_t* p_data, uint32_t dat
 
 //    wiced_result_t wiced_bt_get_buffer_usage (&buffer_stats, sizeof(buffer_stats));
 
-    WICED_BT_TRACE("%s handle:%d len:%d %02x-%02x\n", __FUNCTION__, handle, data_len, p_data[0], p_data[data_len - 1]);
+//    WICED_BT_TRACE("%s handle:%d len:%d %02x-%02x\n", __FUNCTION__, handle, data_len, p_data[0], p_data[data_len - 1]);
+
+    spp_rx_bytes += data_len;
 
 #if LOOPBACK_DATA
     wiced_bt_spp_send_session_data(handle, p_data, data_len);
@@ -578,10 +597,12 @@ void app_send_data(void)
     // Check if we were able to send everything
     if (app_send_offset < APP_TOTAL_DATA_TO_SEND)
     {
-        wiced_start_timer(&app_tx_timer, 100);
+        wiced_start_timer(&app_tx_timer, 5);
     }
     else
     {
+        uint32_t time_tx = clock_SystemTimeMicroseconds64() / 1000 - time_start;
+        WICED_BT_TRACE("sent %d in %dmsec (%dKbps)\n", APP_TOTAL_DATA_TO_SEND, time_tx, APP_TOTAL_DATA_TO_SEND * 8 / time_tx);
         app_send_offset = 0;
     }
 }
@@ -591,9 +612,8 @@ void app_send_data(void)
  */
 void app_interrupt_handler(void *data, uint8_t port_pin)
 {
-    int i;
-
     WICED_BT_TRACE("gpio_interrupt_handler pin:%d send_offset:%d\n", port_pin, app_send_offset);
+    time_start = clock_SystemTimeMicroseconds64() / 1000;
 
      /* Get the status of interrupt on P# */
     if (wiced_hal_gpio_get_pin_interrupt_status(BUTTON_GPIO))
