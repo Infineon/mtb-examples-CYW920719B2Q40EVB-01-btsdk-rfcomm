@@ -78,7 +78,7 @@
 #include "wiced_hal_wdog.h"
 #include "hci_control_api.h"
 #include "wiced_bt_mce_api.h"
-
+#include "wiced_hal_puart.h"
 /*****************************************************************************
 **  Constants
 *****************************************************************************/
