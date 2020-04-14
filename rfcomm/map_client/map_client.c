@@ -161,6 +161,7 @@ map_client_cb_t map_client_cb;
 wiced_bt_buffer_pool_t* p_key_info_pool;  //Pool for storing the  key info
 
 static uint32_t hci_control_proc_rx_cmd( uint8_t *p_data, uint32_t length );
+static void hci_control_transport_status( wiced_transport_type_t type );
 
 const wiced_transport_cfg_t  transport_cfg =
 {
@@ -237,6 +238,9 @@ APPLICATION_START( )
     wiced_transport_init(&transport_cfg);
 
 #ifdef WICED_BT_TRACE_ENABLE
+#ifdef NO_PUART_SUPPORT
+    wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_WICED_UART);
+#else
     // Set to PUART to see traces on peripheral uart(puart)
     wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_PUART);
     //wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_WICED_UART);
@@ -245,6 +249,7 @@ APPLICATION_START( )
 #endif
 #ifndef CYW20706A2
     wiced_hal_puart_configuration(921600, PARITY_NONE, STOP_BIT_1);
+#endif
 #endif
 #endif
 
@@ -769,6 +774,12 @@ uint32_t hci_control_proc_rx_cmd( uint8_t *p_data, uint32_t length )
     //Freeing the buffer in which data is received
     wiced_transport_free_buffer( p_rx_buf );
     return status;
+}
+
+static void hci_control_transport_status( wiced_transport_type_t type )
+{
+    WICED_BT_TRACE( " hci_control_transport_status %x \n", type );
+    hci_control_send_device_started_evt();
 }
 
 void map_client_handle_mce_command( uint16_t cmd_opcode, uint8_t *p_data, uint32_t data_len )
