@@ -72,6 +72,8 @@ void hci_control_handle_reset_cmd( void )
 void hci_control_hci_trace_cback( wiced_bt_hci_trace_type_t type, uint16_t length, uint8_t* p_data )
 {
     //Enable below to receive traces over HCI UART send the trace
+    if (length > 200)
+        length = 200;
     wiced_transport_send_hci_trace( NULL, type, length, p_data  );
 }
 

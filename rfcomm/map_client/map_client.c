@@ -182,7 +182,6 @@ uint8_t pairing_allowed = 0;
 static wiced_result_t map_client_management_callback( wiced_bt_management_evt_t event, wiced_bt_management_evt_data_t *p_event_data );
 static void     map_client_app_init();
 static void     map_client_write_eir();
-static void     hci_control_hci_trace_cback( wiced_bt_hci_trace_type_t type, uint16_t length, uint8_t* p_data );
 
 static void     map_client_event_cback(wiced_bt_mce_evt_t event, wiced_bt_mce_t *p_data);
 static void     map_client_handle_discover_event(wiced_bt_mce_discover_t * p_discover);
@@ -393,9 +392,6 @@ void map_client_app_init()
 
     /* Creating a buffer pool for holding the peer devices's key info */
     p_key_info_pool = wiced_bt_create_pool( KEY_INFO_POOL_BUFFER_SIZE, KEY_INFO_POOL_BUFFER_COUNT);
-
-    /* Register callback for receiving hci traces */
-    wiced_bt_dev_register_hci_trace(hci_control_hci_trace_cback);
 }
 
 /*
@@ -433,15 +429,6 @@ void map_client_write_eir()
     wiced_bt_dev_write_eir( pBuf, (uint16_t)(p - pBuf) );
 
     return;
-}
-
-/*
- *  Pass protocol traces up through the UART
- */
-void hci_control_hci_trace_cback( wiced_bt_hci_trace_type_t type, uint16_t length, uint8_t* p_data )
-{
-    //Enable below to receive traces over HCI UART send the trace
-    wiced_transport_send_hci_trace( NULL, type, length, p_data  );
 }
 
 void map_client_event_cback(wiced_bt_mce_evt_t event, wiced_bt_mce_t *p_data)
@@ -510,7 +497,7 @@ void map_client_event_cback(wiced_bt_mce_evt_t event, wiced_bt_mce_t *p_data)
         break;
 
     default:
-        WICED_BT_TRACE("MAP client event %d not supported\n", event);
+        WICED_BT_TRACE("MAP client event %d ignored\n", event);
         break;
     }
 

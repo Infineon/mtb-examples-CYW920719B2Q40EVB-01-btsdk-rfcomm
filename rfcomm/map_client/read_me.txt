@@ -49,4 +49,18 @@ To demonstrate the app, work through the following steps.
    had been received and the inbox will automatically update to show the ID of
    the new message
 
+Note: iOS MAP behavior
+----------------------
+1. When you try to connect, you will see message that connection is not
+   successful, though pairing is successful. Go to the Bluetooth menu and enable
+   "Show Notifications " for Map_client device. After this step, you will be
+   able to connect successful.
+2. After first connection with MAP client, you will see only 10 messages in Inbox. You will
+   not be able to see messages in other folders such as Outbox or Deleted. On switching from
+   Inbox to other folder and switching back to Inbox, you will not see messages in Inbox.
+   On older iOS releases, you will not be able any messages in any folders.
+3. If you receive messages from another phone while you are connected to MAP client app,
+   those messages will appear in Inbox.
+
+
 -------------------------------------------------------------------------------
