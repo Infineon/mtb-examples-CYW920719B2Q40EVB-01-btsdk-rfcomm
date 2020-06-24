@@ -1,5 +1,5 @@
 #
-# Copyright 2020, Cypress Semiconductor Corporation or a subsidiary of
+# Copyright 2016-2020, Cypress Semiconductor Corporation or a subsidiary of
 # Cypress Semiconductor Corporation. All Rights Reserved.
 #
 # This software, including source code, documentation and related
@@ -48,7 +48,9 @@ SUPPORTED_TARGETS = \
   CYW920721B2EVK-03 \
   CYW920721B2EVK-02 \
   CYW920719B2Q40EVB-01 \
-  CYW9M2BASE-43012BT
+  CYW9M2BASE-43012BT \
+  CYW920819EVB-02 \
+  CYW920820EVB-02 \
 # 20706A2 support can be enabled in future release by adding SUPPORTED_TARGETS
 #  CYW920706WCDEVAL \
 
@@ -56,7 +58,9 @@ TARGET_DEVICE_MAP = \
   CYW920721B2EVK-03/20721B2 \
   CYW920721B2EVK-02/20721B2 \
   CYW920719B2Q40EVB-01/20719B2 \
-  CYW9M2BASE-43012BT/43012C0
+  CYW9M2BASE-43012BT/43012C0 \
+  CYW920819EVB-02/20819A1 \
+  CYW920820EVB-02/20820A1 \
 # 20706A2 support can be enabled in future release by adding TARGET_DEVICE_MAP
 #  CYW920706WCDEVAL/20706A2 \
 
@@ -108,9 +112,10 @@ CY_APP_DEFINES+=\
   -DWICED_BT_TRACE_ENABLE \
   -DOBEX_LIB_SESSION_SUPPORTED
 
-ifeq ($(TARGET),CYW943012EVB-04-BT)
+ifneq ($(filter 43012C0,$(CY_TARGET_DEVICE)),)
 CY_APP_DEFINES += -DWICED_HCI_BAUDRATE=115200
-endif # TARGET
+CY_APP_DEFINES += -DENABLE_MEMORY_PRE_INIT=1
+endif
 
 #
 # Components (middleware libraries)
@@ -118,6 +123,10 @@ endif # TARGET
 COMPONENTS +=bsp_design_modus
 COMPONENTS += map_lib
 COMPONENTS += obex_lib
+
+ifneq ($(filter 20819A1 20820A1,$(CY_TARGET_DEVICE)),)
+CY_APP_PATCH_LIBS += wiced_ble_pre_init_lib.a
+endif
 
 ################################################################################
 # Paths
