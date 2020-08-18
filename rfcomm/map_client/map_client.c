@@ -175,6 +175,12 @@ const wiced_transport_cfg_t  transport_cfg =
 
 uint8_t pairing_allowed = 0;
 
+#if defined(CYW43012C0)
+/* to adjust memory for application */
+uint8_t g_wiced_memory_pre_init_enable = 1;
+uint8_t g_wiced_memory_pre_init_max_ble_connections = 4;
+uint8_t g_wiced_memory_pre_init_num_ble_rl = 16;
+#endif
 
 /******************************************************
  *               Function Declarations
